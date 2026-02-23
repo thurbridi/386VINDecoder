@@ -215,7 +215,7 @@ namespace MP386VINDecoder
 
     private static string FormatRow(string label1, string val1, string label2, string val2)
     {
-      return $"{label1,-14} {val1,-18}  {label2,-14} {val2}";
+      return $"{label1,-12} {val1,-20}  {label2,-14} {val2}";
     }
 
     private IEnumerator RequestVinAsync()
