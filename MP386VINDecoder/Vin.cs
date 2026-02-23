@@ -29,6 +29,7 @@ namespace MP386VINDecoder
     private Coroutine coroutine;
     private float uploadProgress, downloadProgress;
     string author, version;
+    TextMesh bootSequenceTextMesh;
 
     public Vin(string author, string version)
     {
@@ -43,6 +44,9 @@ namespace MP386VINDecoder
         I386.POS_WriteNewLine("ERROR: No arguments needed.");
         return true;
       }
+      // Clear POS boot sequence text
+      bootSequenceTextMesh = GameObject.Find("COMPUTER").transform.Find("SYSTEM/POS/Text").GetComponent<TextMesh>();
+      bootSequenceTextMesh.text = "";
 
       state = ProgramState.WaitingForInput;
       inputBuffer = "";
