@@ -1,4 +1,5 @@
 using System.Collections;
+using HutongGames.PlayMaker;
 using I386API;
 using UnityEngine;
 
@@ -30,6 +31,7 @@ namespace MP386VINDecoder
     private float uploadProgress, downloadProgress;
     string author, version;
     TextMesh bootSequenceTextMesh;
+    FsmBool playerComputer;
 
     public Vin(string author, string version)
     {
@@ -47,6 +49,9 @@ namespace MP386VINDecoder
       // Clear POS boot sequence text
       bootSequenceTextMesh = GameObject.Find("COMPUTER").transform.Find("SYSTEM/POS/Text").GetComponent<TextMesh>();
       bootSequenceTextMesh.text = "";
+
+      // Is player sat in front of the computer?
+      playerComputer = PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerComputer");
 
       state = ProgramState.WaitingForInput;
       inputBuffer = "";
@@ -71,6 +76,9 @@ namespace MP386VINDecoder
       {
         case ProgramState.WaitingForInput:
           InputScreen();
+          if (!playerComputer.Value)
+            break;
+            
           foreach (char c in Input.inputString)
           {
             if (c == '\b')
