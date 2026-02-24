@@ -1,7 +1,6 @@
+using System;
 using System.Collections;
-using System.ComponentModel;
 using I386API;
-using MSCLoader;
 using UnityEngine;
 
 namespace MP386VINDecoder
@@ -20,7 +19,7 @@ namespace MP386VINDecoder
       DisplayingInfo,
     }
 
-
+    private const int ScreenWidth = 80;
     private ProgramState state;
     private string inputBuffer;
     private string lastErrorMessage;
@@ -145,22 +144,28 @@ namespace MP386VINDecoder
       return false;
     }
 
-    private string PrependTabs(int count, string text)
+    private string CenterText(string text, int width)
     {
-      return new string('\t', count) + text;
+      if (text.Length >= width)
+        return text;
+
+      int leftPadding = (width - text.Length) / 2;
+      int rightPadding = width - text.Length - leftPadding;
+
+      return new string(' ', leftPadding) + text + new string(' ', rightPadding);
     }
 
     private void PrintHeader()
     {
-      I386.POS_WriteNewLine(PrependTabs(4, "/======================================\\"));
-      I386.POS_WriteNewLine(PrependTabs(4, "||   ____ ___  ____  ____  ___ ____   ||"));
-      I386.POS_WriteNewLine(PrependTabs(4, "||  / ___/ _ \\|  _ \\|  _ \\|_ _/ ___|  ||"));
-      I386.POS_WriteNewLine(PrependTabs(4, "|| | |  | | | | |_) | |_) || |\\___ \\  ||"));
-      I386.POS_WriteNewLine(PrependTabs(4, "|| | |__| |_| |  _ <|  _ < | | ___) | ||"));
-      I386.POS_WriteNewLine(PrependTabs(4, "||  \\____\\___/|_| \\_\\_| \\_\\___|____/  ||"));
-      I386.POS_WriteNewLine(PrependTabs(4, "\\======================================/"));
-      I386.POS_WriteNewLine(PrependTabs(4, $"        Rivett VIN Decoder v{version}"));
-      I386.POS_WriteNewLine(PrependTabs(4, $"               by {author}"));
+      I386.POS_WriteNewLine(CenterText("/======================================\\", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText("||   ____ ___  ____  ____  ___ ____   ||", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText("||  / ___/ _ \\|  _ \\|  _ \\|_ _/ ___|  ||", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText("|| | |  | | | | |_) | |_) || |\\___ \\  ||", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText("|| | |__| |_| |  _ <|  _ < | | ___) | ||", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText("||  \\____\\___/|_| \\_\\_| \\_\\___|____/  ||", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText("\\======================================/", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText($"Rivett VIN Decoder v{version}", ScreenWidth));
+      I386.POS_WriteNewLine(CenterText($"by {author}", ScreenWidth));
     }
 
     private void InputScreen()
@@ -179,20 +184,22 @@ namespace MP386VINDecoder
       I386.POS_NewLine();
       I386.POS_WriteNewLine($"VIN: {inputBuffer.ToUpper()}");
       I386.POS_Write(string.Format(connectionStatusBuffer, uploadProgress * 100, downloadProgress * 100));
+      I386.POS_NewLine();
       if (state == ProgramState.ConnectionError)
       {
-        I386.POS_NewLine();
-        I386.POS_WriteNewLine(PrependTabs(4, "CONNECTION ERROR: Press [ENTER] to retry."));
+        I386.POS_WriteNewLine(CenterText("CONNECTION ERROR: Press [ENTER] to retry.", ScreenWidth));
       }
       else if (state == ProgramState.VinVerificationFailed)
       {
-        I386.POS_NewLine();
-        I386.POS_WriteNewLine(PrependTabs(2, "ERROR: Invalid VIN number, press [ENTER] to type another VIN."));
+        I386.POS_WriteNewLine(CenterText("ERROR: Invalid VIN number, press [ENTER] to type another VIN.", ScreenWidth));
       }
       else if (state == ProgramState.DownloadSucessful)
       {
+        I386.POS_WriteNewLine(CenterText("Download finished! Press [ENTER] to view VIN information.", ScreenWidth));
+      }
+      else
+      {
         I386.POS_NewLine();
-        I386.POS_WriteNewLine(PrependTabs(2, "Download finished! Press [ENTER] to view VIN information."));
       }
     }
 
@@ -214,7 +221,7 @@ namespace MP386VINDecoder
       I386.POS_WriteNewLine(FormatRow("GEARBOX:", info.Gearbox, "WHEELS:", info.Wheels));
       I386.POS_WriteNewLine(FormatRow("AXLE RATIO:", info.AxleRatio, "REAR WINDOW:", info.RearWindow));
       I386.POS_NewLine();
-      I386.POS_WriteNewLine(PrependTabs(5, "Press [ENTER] to input a new VIN."));
+      I386.POS_WriteNewLine(CenterText("Press [ENTER] to input a new VIN.", ScreenWidth));
     }
 
     private static string FormatRow(string label1, string val1, string label2, string val2)
@@ -249,7 +256,7 @@ namespace MP386VINDecoder
     private IEnumerator ConnectToDatabaseAsync()
     {
       connectionStatusBuffer = "Connecting to Corris Database";
-      for (int i = 0; i < Random.Range(4, 7); i++)
+      for (int i = 0; i < UnityEngine.Random.Range(4, 7); i++)
       {
         connectionStatusBuffer += ".";
         yield return new WaitForSeconds(.65f);
@@ -266,18 +273,21 @@ namespace MP386VINDecoder
     private IEnumerator UploadVinAsync()
     {
       uploadProgress = 0f;
-      connectionStatusBuffer += "Uploading VIN... [{0:F2}%]\n";
+      connectionStatusBuffer += "Uploading VIN... [{0:F0}%]\n";
       for (int bytesUploaded = 0; bytesUploaded < VinDB.VinLength; bytesUploaded++)
       {
         if (!I386.ModemConnected || !I386.PhoneBillPaid)
         {
+          yield return new WaitForSeconds(2f);
           state = ProgramState.ConnectionError;
           yield break;
         }
 
-        yield return new WaitForSeconds(I386.GetDownloadTime(1)); // Simulate upload time
+        yield return new WaitForSeconds(I386.GetDownloadTime(1) * UnityEngine.Random.Range(1.2f, 1.6f)); // Simulate upload time
         uploadProgress = (float)(bytesUploaded + 1) / VinDB.VinLength;
       }
+
+      yield return new WaitForSeconds(0.8f);
 
       bool isValid = ParseVin(inputBuffer, out currentVinInfo);
       if (!isValid)
@@ -286,25 +296,31 @@ namespace MP386VINDecoder
         connectionStatusBuffer += "RESPONSE (400): VIN verification failed.\n";
         yield break;
       }
+
+      connectionStatusBuffer += "RESPONSE (200): VIN verified successfully.\n";
+      yield return new WaitForSeconds(0.65f);
     }
 
     private IEnumerator DownloadInfoAsync()
     {
+      connectionStatusBuffer += "Downloading VIN information... [{1:F0}%]\n";
+
       downloadProgress = 0f;
-      connectionStatusBuffer += "RESPONSE (200): VIN verified successfully.\n";
-      connectionStatusBuffer += "Downloading VIN information... [{1:F2}%]\n";
       int bytesToDownload = currentVinInfo.GetSizeInBytes();
       for (int bytesDownloaded = 0; bytesDownloaded < bytesToDownload; bytesDownloaded++)
       {
         if (!I386.ModemConnected || !I386.PhoneBillPaid)
         {
+          yield return new WaitForSeconds(2f);
           state = ProgramState.ConnectionError;
           yield break;
         }
 
-        yield return new WaitForSeconds(I386.GetDownloadTime(1)); // Simulate download time
+        yield return new WaitForSeconds(I386.GetDownloadTime(1) * UnityEngine.Random.Range(1f, 1.4f)); // Simulate download time
         downloadProgress = (float)(bytesDownloaded + 1) / bytesToDownload;
       }
+
+      yield return new WaitForSeconds(0.65f);
 
       state = ProgramState.DownloadSucessful;
     }
