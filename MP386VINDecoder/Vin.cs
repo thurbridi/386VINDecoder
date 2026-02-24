@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using I386API;
 using UnityEngine;
@@ -16,14 +15,16 @@ namespace MP386VINDecoder
       DownloadingInfo,
       ConnectionError,
       DownloadSucessful,
+      AnimatingInfo,
       DisplayingInfo,
     }
 
     private const int ScreenWidth = 80;
+    private const int VINInfoRows = 12;
     private ProgramState state;
     private string inputBuffer;
     private string lastErrorMessage;
-    private string connectionStatusBuffer;
+    private string connectionStatusBuffer, vinInfoBuffer;
     private VinInfo currentVinInfo;
     private Coroutine coroutine;
     private float uploadProgress, downloadProgress;
@@ -125,9 +126,15 @@ namespace MP386VINDecoder
           ConnectionScreen();
           if (I386.GetKeyDown(KeyCode.Return))
           {
-            state = ProgramState.DisplayingInfo;
+            state = ProgramState.AnimatingInfo;
             connectionStatusBuffer = "";
+            vinInfoBuffer = new string('\n', VINInfoRows - 1);
+            coroutine = I386.StartCoroutine(AnimateInfoScreenAsync(currentVinInfo));
           }
+          break;
+
+        case ProgramState.AnimatingInfo:
+          InfoScreen(currentVinInfo);
           break;
 
         case ProgramState.DisplayingInfo:
@@ -136,6 +143,7 @@ namespace MP386VINDecoder
           {
             state = ProgramState.WaitingForInput;
             inputBuffer = "";
+            vinInfoBuffer = "";
             currentVinInfo = null;
           }
           break;
@@ -207,26 +215,50 @@ namespace MP386VINDecoder
     {
       I386.POS_ClearScreen();
       I386.POS_WriteNewLine($"VIN: {info.Vin.ToUpper()}");
-      I386.POS_WriteNewLine(new string('-', 58));
-      I386.POS_WriteNewLine(FormatRow("COUNTRY:", info.Country, "AXLE LOCK:", info.AxleLock));
-      I386.POS_WriteNewLine(FormatRow("PLANT:", info.AssemblyPlant, "BODY COLOUR:", info.BodyColour));
-      I386.POS_WriteNewLine(FormatRow("MODEL:", info.Model, "VINYL ROOF:", info.VinylRoof));
-      I386.POS_WriteNewLine(FormatRow("BODY TYPE:", info.BodyType, "INT. TRIM:", info.InteriorTrim));
-      I386.POS_WriteNewLine(FormatRow("VERSION:", info.Version, "RADIO:", info.Radio));
-      I386.POS_WriteNewLine(FormatRow("YEAR:", info.Year, "INSTR. PANEL:", info.InstrumentPanel));
-      I386.POS_WriteNewLine(FormatRow("MONTH:", info.Month, "WINDSHIELD:", info.Windshield));
-      I386.POS_WriteNewLine(FormatRow("SERIAL:", info.SerialNumber, "SEATS:", info.Seats));
-      I386.POS_WriteNewLine(FormatRow("DRIVE:", info.Drive, "SUSPENSION:", info.Suspension));
-      I386.POS_WriteNewLine(FormatRow("ENGINE:", info.Engine, "BRAKES:", info.Brakes));
-      I386.POS_WriteNewLine(FormatRow("GEARBOX:", info.Gearbox, "WHEELS:", info.Wheels));
-      I386.POS_WriteNewLine(FormatRow("AXLE RATIO:", info.AxleRatio, "REAR WINDOW:", info.RearWindow));
-      I386.POS_NewLine();
-      I386.POS_WriteNewLine(CenterText("Press [ENTER] to input a new VIN.", ScreenWidth));
+      I386.POS_WriteNewLine(new string('-', 60));
+      I386.POS_WriteNewLine(vinInfoBuffer);
+      if (state == ProgramState.DisplayingInfo)
+      {
+        I386.POS_NewLine();
+        I386.POS_WriteNewLine(CenterText("Press [ENTER] to input a new VIN.", ScreenWidth));
+      }
+      else
+      {
+        I386.POS_WriteNewLine("\n");
+      }
     }
 
     private static string FormatRow(string label1, string val1, string label2, string val2)
     {
       return $"{label1,-12} {val1,-20}  {label2,-14} {val2}";
+    }
+
+    private IEnumerator AnimateInfoScreenAsync(VinInfo info)
+    {
+      string[] rows = new string[]
+      {
+        FormatRow("COUNTRY:", info.Country, "AXLE LOCK:", info.AxleLock),
+        FormatRow("PLANT:", info.AssemblyPlant, "BODY COLOUR:", info.BodyColour),
+        FormatRow("MODEL:", info.Model, "VINYL ROOF:", info.VinylRoof),
+        FormatRow("BODY TYPE:", info.BodyType, "INT. TRIM:", info.InteriorTrim),
+        FormatRow("VERSION:", info.Version, "RADIO:", info.Radio),
+        FormatRow("YEAR:", info.Year, "INSTR. PANEL:", info.InstrumentPanel),
+        FormatRow("MONTH:", info.Month, "WINDSHIELD:", info.Windshield),
+        FormatRow("SERIAL:", info.SerialNumber, "SEATS:", info.Seats),
+        FormatRow("DRIVE:", info.Drive, "SUSPENSION:", info.Suspension),
+        FormatRow("ENGINE:", info.Engine, "BRAKES:", info.Brakes),
+        FormatRow("GEARBOX:", info.Gearbox, "WHEELS:", info.Wheels),
+        FormatRow("AXLE RATIO:", info.AxleRatio, "REAR WINDOW:", info.RearWindow),
+      };
+
+      for (int i = 0; i < rows.Length; i++)
+      {
+        yield return new WaitForSeconds(0.75f);
+
+        vinInfoBuffer = string.Join("\n", rows, 0, i + 1) + new string('\n', VINInfoRows - i - 1);
+      }
+
+      state = ProgramState.DisplayingInfo;
     }
 
     private IEnumerator RequestVinAsync()
