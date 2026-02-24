@@ -9,7 +9,7 @@ namespace MP386VINDecoder
     public override string ID => "MP386VINDecoder"; // Your (unique) mod ID 
     public override string Name => "386 VIN Decoder"; // Your mod name
     public override string Author => "casper-3"; // Name of the Author (your name)
-    public override string Version => "1.0.0"; // Version
+    public override string Version => "1.0.1"; // Version
     public override string Description => "Query Rivett VINs using your 386 computer."; // Short description of your mod
     public override Game SupportedGames => Game.MyWinterCar; //Supported Games
     public override void ModSetup()
