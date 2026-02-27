@@ -46,9 +46,6 @@ namespace MP386VINDecoder
         I386.POS_WriteNewLine("ERROR: No arguments needed.");
         return true;
       }
-      // Clear POS boot sequence text
-      bootSequenceTextMesh = GameObject.Find("COMPUTER").transform.Find("SYSTEM/POS/Text").GetComponent<TextMesh>();
-      bootSequenceTextMesh.text = "";
 
       // Is player sat in front of the computer?
       playerComputer = PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerComputer");
@@ -78,7 +75,7 @@ namespace MP386VINDecoder
           InputScreen();
           if (!playerComputer.Value)
             break;
-            
+
           foreach (char c in Input.inputString)
           {
             if (c == '\b')
