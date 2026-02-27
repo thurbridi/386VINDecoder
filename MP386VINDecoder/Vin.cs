@@ -30,8 +30,6 @@ namespace MP386VINDecoder
     private Coroutine coroutine;
     private float uploadProgress, downloadProgress;
     string author, version;
-    TextMesh bootSequenceTextMesh;
-    FsmBool playerComputer;
 
     public Vin(string author, string version)
     {
@@ -46,9 +44,6 @@ namespace MP386VINDecoder
         I386.POS_WriteNewLine("ERROR: No arguments needed.");
         return true;
       }
-
-      // Is player sat in front of the computer?
-      playerComputer = PlayMakerGlobals.Instance.Variables.FindFsmBool("PlayerComputer");
 
       state = ProgramState.WaitingForInput;
       inputBuffer = "";
@@ -73,7 +68,7 @@ namespace MP386VINDecoder
       {
         case ProgramState.WaitingForInput:
           InputScreen();
-          if (!playerComputer.Value)
+          if (!I386.PlayerControl)
             break;
 
           foreach (char c in Input.inputString)
