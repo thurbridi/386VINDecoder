@@ -35,23 +35,28 @@
     </Reference>
 
     <Reference Include="MSCLoader">
-        <HintPath>/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/MSCLoader.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/MSCLoader.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\My Winter Car\mywintercar_Data\Managed\MSCLoader.dll</HintPath>
     </Reference>
 
     <Reference Include="UnityEngine">
-        <HintPath>/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/UnityEngine.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/UnityEngine.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\My Winter Car\mywintercar_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
 
     <Reference Include="Assembly-CSharp">
-        <HintPath>/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/Assembly-CSharp.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/Assembly-CSharp.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\My Winter Car\mywintercar_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
 
     <Reference Include="PlayMaker">
-        <HintPath>/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/PlayMaker.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">/home/casper/.local/share/Steam/steamapps/common/My Winter Car/mywintercar_Data/Managed/PlayMaker.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\My Winter Car\mywintercar_Data\Managed\PlayMaker.dll</HintPath>
     </Reference>
 
     <Reference Include="I386API">
-        <HintPath>/home/casper/.local/share/Steam/steamapps/common/My Winter Car/Mods/386PC.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Linux'))">/home/casper/.local/share/Steam/steamapps/common/My Winter Car/Mods/386PC.dll</HintPath>
+        <HintPath Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\My Winter Car\Mods\386PC.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
